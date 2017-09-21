@@ -1,51 +1,47 @@
 package com.beisen.bigdata.test;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+
 import java.util.*;
 import java.util.function.Consumer;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-
 import com.beisen.bigdata.util.SparkUtil;
-
-import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.sql.sources.In;
 import scala.Tuple2;
-import scala.tools.cmd.gen.AnyVals;
 
 public class test {
     private static final String readTableNamePre = "BEISENTALENTDW";
     private static final String family = "0";
     private static final byte[] familyBytes = family.getBytes();
     private static final Logger logger = Logger.getLogger(test.class);
+    
     private static int N = 10000000;
-    private static person[] p = new person[N];
-    private static person[] p_solve = new person[N];
+    private static int count_p_solve = 0;  //统计
+    private static int count_all = 0;
     private static int count = 0; //记录每一个key值对应下的测试人员数量
+    
+    private static person[] p = new person[N];//用于记录所有人
+    private static person[] p_solve = new person[N];//用于记录对于每个key值对应的符合要求的人
+    private static double[] ans_temp = new double[N];//统计欧氏距离小于指定值 且对应数量很大的ans 排序后按指定相似度输出
+    
     private static double average_score_limit = 7.0;//平均分最低限制
     private static double max_limit = 3.0;//各个维度上对应的差值最大限度
-    private static double[] ans_temp = new double[N];
     private static double ans_limit = 0.0;//欧几里得 距离限制 通过计算得到
-    private static double similarity_limit = 0.99;//相似度限制
-    private static double long_limit = 4.2;  //对最大的欧式距离限制 确保有一定的相似性  
-    private static int count_p_solve = 0;
-    private static int count_all = 0;
-    private static double ans_min_test = 100; //测试欧氏距离的最小值
+    private static double similarity_limit = 0.8;//相似度限制
+    private static double long_limit = 6;  //对最大的欧式距离限制 确保有一定的相似性  
     
     public static void init(){//初始化函数  完成对平均分的限制
         count_p_solve = 0;
@@ -88,14 +84,15 @@ public class test {
         ans_limit = ans_temp[(int)(temp * (1 - similarity_limit))];
     }
     
-    public static void cal_similarity(){//计算两个人之间的相似度
-        boolean have_ans = false;
-        int count_ans = 0;
+    public static void cal_similarity()throws Exception{//计算两个人之间的相似度
         double max = 0;
         for(int i = 0;i < count_p_solve;i++){
             for(int j =i+1; j< count_p_solve;j++){
                 double ans = 0;
                 boolean can_cal = true;
+                if(p_solve[i].user_id.equals(p_solve[j].user_id)){
+                    can_cal = false;
+                }
                 for(int k = 1;k <=p_solve[i].num;k++){
                     if((p_solve[i].scores[k] - p_solve[j].scores[k]) > max){
                         max = p_solve[i].scores[k] - p_solve[j].scores[k];
@@ -111,77 +108,98 @@ public class test {
                     }
                     ans = Math.sqrt(ans);
                     if(ans < ans_limit && ans < long_limit){
-                        have_ans = true;
+                        System.out.println("the tenantId and testId is " + p_solve[i].id);
                         System.out.println("the eu-distance is " + ans);
-                        System.out.println("the similarity is " + 1 / (1 + 0.1 * ans) * 100 + "%");
+                        System.out.println("the similarity is " + 1 / (1 + 0.02 * ans) * 100 + "%");
                         print_ans(i,j);
-                        if(ans < ans_min_test) ans_min_test = ans;
+                        double similarity_percent = 1 / (1 + 0.02 * ans) * 100;
+                        save_to_hbase(i,j,similarity_percent);
                     }
                 }
             }
         }
-      //  if(!have_ans) System.out.println("no answer!");
+    }
+
+
+    private static byte[][] getSplitKeys(){
+        String[] keys = new String[] {"001|","002|","003|","004|","005|","006|","007|","008|","009|","010|","011|","012|","013|","014|","015|","016|","017|","018|","019|","020|",
+                "021|","022|","023|","024|","025|","026|","027|","028|","029|","030|","031|","032|","033|","034|","035|","036|","037|","038|","039|","040|","041|","042|","043|","044|","045|",
+                "046|","047|","048|","049|","050|","051|","052|","053|","054|","055|","056|","057|","058|","059|","060|","061|","062|","063|","064|","065|","066|","067|","068|","069|","070|",
+                "071|","072|","073|","074|","075|","076|","077|","078|","079|","080|","081|","082|","083|","084|","085|","086|","087|","088|","089|","090|","091|","092|","093|","094|","095|",
+                "096|","097|","098|","099|","100|","101|","102|","103|","104|","105|","106|","107|","108|","109|","110|","111|","112|","113|","114|","115|","116|","117|","118|","119|","120|",
+                "121|","122|","123|","124|","125|","126|","127|","128|","129|","130|","131|","132|","133|","134|","135|","136|","137|","138|","139|","140|","141|","142|","143|","144|","145|",
+                "146|","147|","148|","149|","150|","151|","152|","153|","154|","155|","156|","157|","158|","159|","160|","161|","162|","163|","164|","165|","166|","167|","168|","169|","170|",
+                "171|","172|","173|","174|","175|","176|","177|","178|","179|","180|","181|","182|","183|","184|","185|","186|","187|","188|","189|","190|","191|","192|","193|","194|","195|",
+                "196|","197|","198|","199|","200|","201|","202|","203|","204|","205|","206|","207|","208|","209|","210|","211|","212|","213|","214|","215|","216|","217|","218|","219|","220|",
+                "221|","222|","223|","224|","225|","226|","227|","228|","229|","230|","231|","232|","233|","234|","235|","236|","237|","238|","239|","240|","241|","242|","243|","244|","245|",
+                "246|","247|","248|","249|","250|","251|","252|","253|","254|","255|"};
+        byte[][] splitKeys = new byte[keys.length][];
+        TreeSet<byte[]> rows = new TreeSet<byte[]>(Bytes.BYTES_COMPARATOR);
+        for(int i = 0;i < keys.length;i++){
+            rows.add(Bytes.toBytes(keys[i]));
+        }
+        Iterator<byte[]> rowKeyIter = rows.iterator();
+        int i = 0;
+        while(rowKeyIter.hasNext()){
+            byte[] tempRow = rowKeyIter.next();
+            rowKeyIter.remove();
+            splitKeys[i] = tempRow;
+            i++;
+        }
+        return splitKeys;
     }
     
-    public void test(){
-        System.out.println(count);
-        for(int i = 0; i < count; i++){
-            System.out.println(p[i].user_id);
-            System.out.println(p[i].average);
-            System.out.println(p[i].num);
-            for(int j = 1; j <= p[i].num;j++){
-                System.out.print(p[i].scores[j] + " ");
-            }
-            System.out.println();
+    public static void save_to_hbase(int i,int j,double similarity_percent) throws Exception{//将得到的结果写入hbase
+        Configuration conf = HBaseConfiguration.create();
+        String tableName = "beisendw:talentSimilarity";
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02");
+        conf.set(TableInputFormat.INPUT_TABLE,tableName);
+
+
+        byte[][] splitKeys = getSplitKeys();
+        
+        HBaseAdmin hadmin = new HBaseAdmin(conf);
+        if(!hadmin.isTableAvailable(tableName)){
+            HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+            tableDesc.addFamily(new HColumnDescriptor("fmy".getBytes()));
+            hadmin.createTable(tableDesc,splitKeys);
         }
-        System.out.println("----------------------------------");
-        for(int i = 0; i < count_p_solve; i++){
-            System.out.println(p_solve[i].user_id);
-            System.out.println(p_solve[i].average);
-            System.out.println(p_solve[i].num);
-            for(int j = 1; j <= p_solve[i].num;j++){
-                System.out.print(p_solve[i].scores[j]+" ");
-            }
-            System.out.println();
-        }
+        HTable table = new HTable(conf,tableName);
+        int temp = Integer.parseInt(p_solve[i].id.substring(0,6));
+        temp = temp % 256;
+        String temp_key = String.valueOf(temp);
+        String rowkey = temp_key+"_"+p_solve[i].id + p_solve[i].user_id + "_" + p_solve[j].user_id;
+        Put p = new Put(Bytes.toBytes(rowkey));
+        p.add(Bytes.toBytes("fmy"),Bytes.toBytes("similarity"),Bytes.toBytes(  similarity_percent + "%"));
+        table.put(p);
+
+        String rowkey1 = temp_key+"_"+p_solve[i].id + p_solve[j].user_id + "_" + p_solve[i].user_id;
+        Put p1 = new Put(Bytes.toBytes(rowkey1));
+        p1.add(Bytes.toBytes("fmy"),Bytes.toBytes("similarity"),Bytes.toBytes(  similarity_percent + "%"));
+        table.put(p1);
+        
+        table.flushCommits();
     }
     
     public static void print_ans(int i,int j){
-        
-        try{
-            File file = new File("C:\\Users\\shenyun\\Desktop\\test.txt");
-            FileWriter fw = new FileWriter(file.getName(),true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("the tenantId and testId is " + p_solve[i].id + "\n");
-            bw.write("the actual statistics between id " + p_solve[i].user_id + " and id " + p_solve[j].user_id + " is"+ "\n");
-            for(int m = 1;m <= p_solve[i].num;m++){
-                bw.write(p_solve[i].scores[m] + " ");
-            }
-            bw.write("\n");
-            for(int m = 1;m <= p_solve[j].num;m++){
-                bw.write(p_solve[j].scores[m] + " ");
-            }
-            bw.write("\n");
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        
         count_all++;
-//        System.out.println("the tenantId and testId is " + p_solve[i].id);
-//        System.out.println("the actual statistics between id " + p_solve[i].user_id + " and id " + p_solve[j].user_id + " is");
-//        for(int m = 1;m <= p_solve[i].num;m++){
-//            System.out.print(p_solve[i].scores[m] + " ");
-//        }
-//        System.out.println();
-//        for(int m = 1;m <= p_solve[j].num;m++){
-//            System.out.print(p_solve[j].scores[m] + " ");
-//        }
-//        System.out.println();
+        System.out.println("the actual statistics between id " + p_solve[i].user_id + " and id " + p_solve[j].user_id + " is");
+        for(int m = 1;m <= p_solve[i].num;m++){
+            System.out.print(p_solve[i].scores[m] + " ");
+        }
+        System.out.println();
+        for(int m = 1;m <= p_solve[j].num;m++){
+            System.out.print(p_solve[j].scores[m] + " ");
+        }
+        System.out.println();
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
+        long start_time = System.currentTimeMillis();
         SparkConf conf1 = new SparkConf();
-        conf1.setMaster("local[*]");
+       // conf1.setMaster("local[*]");
         conf1.setAppName("shenyun_test");
         JavaSparkContext jsc = new JavaSparkContext(conf1);
         String[] columnList = new String[]{
@@ -251,6 +269,9 @@ public class test {
                 String tenantId = Bytes.toString(res.getValue(familyBytes, "TENANTID".getBytes()));
                 String testId = Bytes.toString(res.getValue(familyBytes, "TESTID".getBytes()));
                 String userId = Bytes.toString(res.getValue(familyBytes, "BEISENUSERID".getBytes()));
+                while(userId.length() != 9){
+                    userId = userId + "*";
+                }
                 String value = userId;
                 for (int i = 0; i < cells.length; i++) {
                     String temp = Bytes.toString(CellUtil.cloneQualifier(cells[i]));
@@ -259,7 +280,7 @@ public class test {
                         value = value + "," + Bytes.toString(res.getValue(familyBytes, temp.getBytes()));
                     }
                 }
-                String key = tenantId + " " + testId;
+                String key = tenantId + "_" + testId + "_";
                 return new Tuple2<>(key, value);
             }
         });
@@ -280,16 +301,16 @@ public class test {
                     }
                     p[count].average = p[count].average / p[count].num;
                     count ++;
-
-                    init();
-                    preview();
-                    cal_similarity();
                 }
             });
+            init();
+            preview();
+            cal_similarity();
         }
         talentRdd.collect();
-        System.out.println(count_all + "--------------------------------");
-        System.out.println(ans_min_test);
+        System.out.println("we total find " + count_all + " groups");
+        long end_time = System.currentTimeMillis();
+        System.out.println("the time we use is about : " + (end_time - start_time) + "ms");
     }
 }
 
