@@ -38,10 +38,10 @@ public class test {
     private static double[] ans_temp = new double[N];//统计欧氏距离小于指定值 且对应数量很大的ans 排序后按指定相似度输出
     
     private static double average_score_limit = 7.0;//平均分最低限制
-    private static double max_limit = 3.0;//各个维度上对应的差值最大限度
+    private static double max_limit = 1.0;//各个维度上对应的差值最大限度
     private static double ans_limit = 0.0;//欧几里得 距离限制 通过计算得到
     private static double similarity_limit = 0.8;//相似度限制
-    private static double long_limit = 6;  //对最大的欧式距离限制 确保有一定的相似性  
+    private static double long_limit = 5;  //对最大的欧式距离限制 确保有一定的相似性  
     
     public static void init(){//初始化函数  完成对平均分的限制
         count_p_solve = 0;
@@ -107,13 +107,15 @@ public class test {
                         ans += (p_solve[i].scores[k] - p_solve[j].scores[k]) * (p_solve[i].scores[k] - p_solve[j].scores[k]);
                     }
                     ans = Math.sqrt(ans);
-                    if(ans < ans_limit && ans < long_limit){
-                        System.out.println("the tenantId and testId is " + p_solve[i].id);
-                        System.out.println("the eu-distance is " + ans);
-                        System.out.println("the similarity is " + 1 / (1 + 0.02 * ans) * 100 + "%");
-                        print_ans(i,j);
+                    //if(ans < ans_limit && ans < long_limit){ 
+                    if(ans < long_limit){
+//                        System.out.println("the tenantId and testId is " + p_solve[i].id);
+//                        System.out.println("the eu-distance is " + ans);
+//                        System.out.println("the similarity is " + 1 / (1 + 0.02 * ans) * 100 + "%");
+                     //   print_ans(i,j);
                         double similarity_percent = 1 / (1 + 0.02 * ans) * 100;
-                        save_to_hbase(i,j,similarity_percent);
+                      //  save_to_hbase(i,j,similarity_percent);
+                        logger.info(p_solve[i].user_id + " " + p_solve[j].user_id + " " + similarity_percent);
                     }
                 }
             }
@@ -153,7 +155,10 @@ public class test {
         Configuration conf = HBaseConfiguration.create();
         String tableName = "beisendw:talentSimilarity";
         conf.set("hbase.zookeeper.property.clientPort", "2181");
-        conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02");
+        conf.set("hbase.zookeeper.quorum", "tjhadoop00,tjhadoop01,tjhadoop02");
+        conf.set("spark.kryoserializer.buffer.max","2g");
+        // conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02")
+
         conf.set(TableInputFormat.INPUT_TABLE,tableName);
 
 
@@ -199,8 +204,9 @@ public class test {
     public static void main(String[] args) throws Exception{
         long start_time = System.currentTimeMillis();
         SparkConf conf1 = new SparkConf();
+        conf1.set("spark.kryoserializer.buffer.max","1024");
        // conf1.setMaster("local[*]");
-        conf1.setAppName("shenyun_test");
+        conf1.setAppName("talent_similarity");
         JavaSparkContext jsc = new JavaSparkContext(conf1);
         String[] columnList = new String[]{
                 "TENANTID", "TESTID", "BEISENUSERID",
@@ -304,13 +310,13 @@ public class test {
                 }
             });
             init();
-            preview();
+      //      preview();
             cal_similarity();
         }
         talentRdd.collect();
-        System.out.println("we total find " + count_all + " groups");
+       // System.out.println("we total find " + count_all + " groups");
         long end_time = System.currentTimeMillis();
-        System.out.println("the time we use is about : " + (end_time - start_time) + "ms");
+      //  System.out.println("the time we use is about : " + (end_time - start_time) + "ms");
     }
 }
 
