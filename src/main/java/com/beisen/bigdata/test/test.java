@@ -19,7 +19,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import com.beisen.bigdata.util.SparkUtil;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.api.java.function.VoidFunction2;
 import org.apache.spark.sql.sources.In;
+import redis.clients.jedis.Tuple;
 import scala.Tuple2;
 
 public class test {
@@ -37,11 +40,11 @@ public class test {
     private static person[] p_solve = new person[N];//用于记录对于每个key值对应的符合要求的人
     private static double[] ans_temp = new double[N];//统计欧氏距离小于指定值 且对应数量很大的ans 排序后按指定相似度输出
     
-    private static double average_score_limit = 7.0;//平均分最低限制
+    private static double average_score_limit;//平均分最低限制
     private static double max_limit = 1.0;//各个维度上对应的差值最大限度
     private static double ans_limit = 0.0;//欧几里得 距离限制 通过计算得到
-    private static double similarity_limit = 0.8;//相似度限制
-    private static double long_limit = 5;  //对最大的欧式距离限制 确保有一定的相似性  
+    private static double similarity_limit = 90.0;//相似度限制
+    private static double long_limit = 6;  //对最大的欧式距离限制 确保有一定的相似性  
     
     public static void init(){//初始化函数  完成对平均分的限制
         count_p_solve = 0;
@@ -75,13 +78,18 @@ public class test {
                         ans += (p_solve[i].scores[k] - p_solve[j].scores[k]) * (p_solve[i].scores[k] - p_solve[j].scores[k]);
                     }
                     ans = Math.sqrt(ans);
-                    ans_temp[temp] = ans;
-                    temp++;
+                    if(ans < long_limit){
+                        ans_temp[temp] = ans;
+                        temp++;   
+                    }
                 }
             }
         }
         Arrays.sort(ans_temp,0,temp);
         ans_limit = ans_temp[(int)(temp * (1 - similarity_limit))];
+        for(int i =0;i<temp;i++){
+            ans_temp[i] = 0;
+        }
     }
     
     public static void cal_similarity()throws Exception{//计算两个人之间的相似度
@@ -107,15 +115,10 @@ public class test {
                         ans += (p_solve[i].scores[k] - p_solve[j].scores[k]) * (p_solve[i].scores[k] - p_solve[j].scores[k]);
                     }
                     ans = Math.sqrt(ans);
-                    //if(ans < ans_limit && ans < long_limit){ 
-                    if(ans < long_limit){
-//                        System.out.println("the tenantId and testId is " + p_solve[i].id);
-//                        System.out.println("the eu-distance is " + ans);
-//                        System.out.println("the similarity is " + 1 / (1 + 0.02 * ans) * 100 + "%");
-                     //   print_ans(i,j);
-                        double similarity_percent = 1 / (1 + 0.02 * ans) * 100;
-                      //  save_to_hbase(i,j,similarity_percent);
-                        logger.info(p_solve[i].user_id + " " + p_solve[j].user_id + " " + similarity_percent);
+                    double similarity_percent = 1 / (1 + 0.02 * ans) * 100;
+                    if(ans < long_limit && similarity_percent > similarity_limit){
+                        logger.info("the tenantId and testId is "+ p[i].id + " the userId are "+ p[i].user_id + " "+ p[j].user_id + " the similarity is " + similarity_percent +"%");
+                        save_to_hbase(i,j,similarity_percent);
                     }
                 }
             }
@@ -156,9 +159,7 @@ public class test {
         String tableName = "beisendw:talentSimilarity";
         conf.set("hbase.zookeeper.property.clientPort", "2181");
         conf.set("hbase.zookeeper.quorum", "tjhadoop00,tjhadoop01,tjhadoop02");
-        conf.set("spark.kryoserializer.buffer.max","2g");
-        // conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02")
-
+//        conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02");
         conf.set(TableInputFormat.INPUT_TABLE,tableName);
 
 
@@ -174,6 +175,11 @@ public class test {
         int temp = Integer.parseInt(p_solve[i].id.substring(0,6));
         temp = temp % 256;
         String temp_key = String.valueOf(temp);
+
+        while(temp_key.length()!=3){
+            temp_key = "0" + temp_key;
+        }
+
         String rowkey = temp_key+"_"+p_solve[i].id + p_solve[i].user_id + "_" + p_solve[j].user_id;
         Put p = new Put(Bytes.toBytes(rowkey));
         p.add(Bytes.toBytes("fmy"),Bytes.toBytes("similarity"),Bytes.toBytes(  similarity_percent + "%"));
@@ -204,7 +210,7 @@ public class test {
     public static void main(String[] args) throws Exception{
         long start_time = System.currentTimeMillis();
         SparkConf conf1 = new SparkConf();
-        conf1.set("spark.kryoserializer.buffer.max","1024");
+        conf1.set("spark.kryoserializer.buffer.max","512");
        // conf1.setMaster("local[*]");
         conf1.setAppName("talent_similarity");
         JavaSparkContext jsc = new JavaSparkContext(conf1);
@@ -290,32 +296,66 @@ public class test {
                 return new Tuple2<>(key, value);
             }
         });
-        Map<String, Iterable<String>> resultMap = talentRdd.groupByKey().collectAsMap();
-        for (String key : resultMap.keySet()) {
-            count = 0;
-            resultMap.get(key).forEach(new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                    p[count] = new person();
-                    p[count].id = key;
-                    String[] temp = s.split(",");
-                    p[count].num = temp.length - 1;
-                    p[count].user_id = temp[0];
-                    for(int i = 1;i <= p[count].num;i++){
-                        p[count].scores[i] = Double.parseDouble(temp[i]);
-                        p[count].average += p[count].scores[i];
+        talentRdd.groupByKey().foreachPartition(new VoidFunction<Iterator<Tuple2<String, Iterable<String>>>>() {
+            @Override
+            public void call(Iterator<Tuple2<String, Iterable<String>>> f) throws Exception {
+                while (f.hasNext()){
+                   count = 0;
+                    Tuple2<String, Iterable<String>> s = f.next();
+                    double average_temp = 0.0;
+                    for(String temp_s : s._2){
+                        p[count] = new person();
+                        p[count].id = s._1;
+                        String[] temp = temp_s.split(",");
+                        p[count].num = temp.length - 1;
+                        p[count].user_id = temp[0];
+                        for(int i = 1;i <= p[count].num;i++){
+                            p[count].scores[i] = Double.parseDouble(temp[i]);
+                            p[count].average += p[count].scores[i]; 
+                        }
+                        p[count].average = p[count].average / p[count].num;
+                        if(p[count].average > average_temp) average_temp = p[count].average;
+                        count ++;
+                    }   
+                    if(average_temp > 10.0){
+                        average_score_limit = 70.0;
+                    }else{
+                        average_score_limit = 7.0;
                     }
-                    p[count].average = p[count].average / p[count].num;
-                    count ++;
+                    init();
+                    //preview();
+                    cal_similarity();
+                    logger.info("------------------------here is the amount of count : "  + count + "----------");
                 }
-            });
-            init();
-      //      preview();
-            cal_similarity();
-        }
+            }
+        });
         talentRdd.collect();
+//        Map<String, Iterable<String>> resultMap = talentRdd.groupByKey().collectAsMap();
+//        for (String key : resultMap.keySet()) {
+//            count = 0;
+//            resultMap.get(key).forEach(new Consumer<String>() {
+//                @Override
+//                public void accept(String s) {
+//                    p[count] = new person();
+//                    p[count].id = key;
+//                    String[] temp = s.split(",");
+//                    p[count].num = temp.length - 1;
+//                    p[count].user_id = temp[0];
+//                    for(int i = 1;i <= p[count].num;i++){
+//                        p[count].scores[i] = Double.parseDouble(temp[i]);
+//                        p[count].average += p[count].scores[i];
+//                    }
+//                    p[count].average = p[count].average / p[count].num;
+//                    count ++;
+//                }
+//            });
+//            init();
+//      //      preview();
+//            cal_similarity();
+//        }
+
        // System.out.println("we total find " + count_all + " groups");
-        long end_time = System.currentTimeMillis();
+       // long end_time = System.currentTimeMillis();
       //  System.out.println("the time we use is about : " + (end_time - start_time) + "ms");
     }
 }

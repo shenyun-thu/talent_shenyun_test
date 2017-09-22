@@ -55,9 +55,8 @@ object SparkUtil {
 
     conf.set("hbase.zookeeper.property.clientPort", "2181")
  //   conf.set("hbase.zookeeper.quorum", "10.129.20.100")
-   // conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02")
+//    conf.set("hbase.zookeeper.quorum", "hdfs00,hdfs01,hdfs02")
     conf.set("hbase.zookeeper.quorum", "tjhadoop00,tjhadoop01,tjhadoop02")
-    //conf.set("spark.kryoserializer.buffer.max","2g")
     conf.set("hbase.client.keyvalue.maxsize","524288000");//
     conf.set("hbase.rpc.timeout","6000000") //RPC超时时间
     conf.set("hbase.client.operation.timeout","120000000")//RPC超时时间

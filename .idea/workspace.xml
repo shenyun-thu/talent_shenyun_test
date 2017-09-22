@@ -2,13 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ff77981-75b7-4e88-8bc2-e3a33ad00878" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/test/test$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/test/test$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/test/test.class" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/bigdata-resumeanalysis/talent_shenyun_test-1.0-SNAPSHOT.jar" afterPath="$PROJECT_DIR$/target/bigdata-resumeanalysis/talent_shenyun_test-1.0-SNAPSHOT.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/test/test$3.class" afterPath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/test/test$3.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/util/SparkUtil$.class" afterPath="$PROJECT_DIR$/target/classes/com/beisen/bigdata/util/SparkUtil$.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/talent_shenyun_test-1.0-SNAPSHOT.jar" afterPath="$PROJECT_DIR$/target/talent_shenyun_test-1.0-SNAPSHOT.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/test.java" afterPath="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/test.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala" afterPath="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala" />
@@ -27,47 +20,16 @@
       <file leaf-file-name="test.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/test.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1196">
-              <caret line="206" column="57" lean-forward="false" selection-start-line="206" selection-start-column="57" selection-end-line="206" selection-end-column="57" />
+            <state relative-caret-position="612">
+              <caret line="161" column="69" lean-forward="true" selection-start-line="161" selection-start-column="69" selection-end-line="161" selection-end-column="69" />
               <folding>
                 <element signature="method#init#0;class#test#0" expanded="false" />
                 <element signature="method#preview#0;class#test#0" expanded="false" />
                 <element signature="method#cal_similarity#0;class#test#0" expanded="false" />
                 <element signature="method#getSplitKeys#0;class#test#0" expanded="false" />
-                <element signature="method#save_to_hbase#0;class#test#0" expanded="false" />
                 <element signature="method#print_ans#0;class#test#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pom.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-380">
-              <caret line="16" column="42" lean-forward="false" selection-start-line="16" selection-start-column="42" selection-end-line="16" selection-end-column="42" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PartitionRowKeyManager.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/PartitionRowKeyManager.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
-              <caret line="13" column="12" lean-forward="true" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="part_test.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/part_test.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-170">
-              <caret line="38" column="18" lean-forward="true" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
-              <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="class#15707:16193" expanded="false" />
+                <element signature="method#call#0;class#16209:17448" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -76,8 +38,8 @@
       <file leaf-file-name="SparkUtil.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="475">
-              <caret line="59" column="14" lean-forward="true" selection-start-line="59" selection-start-column="14" selection-end-line="59" selection-end-column="54" />
+            <state relative-caret-position="437">
+              <caret line="57" column="2" lean-forward="false" selection-start-line="57" selection-start-column="2" selection-end-line="57" selection-end-column="2" />
               <folding />
             </state>
           </provider>
@@ -122,9 +84,9 @@
         <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/saveToHbase.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/makeKey.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/part_test.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala" />
         <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/PartitionRowKeyManager.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/test.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala" />
       </list>
     </option>
   </component>
@@ -163,7 +125,7 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="1382" />
@@ -633,15 +595,15 @@
       <workItem from="1505435775303" duration="18182000" />
       <workItem from="1505867742708" duration="28217000" />
       <workItem from="1505953772968" duration="24621000" />
-      <workItem from="1506041606295" duration="3081000" />
+      <workItem from="1506041606295" duration="14310000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="92254000" />
+    <option name="totallyTimeSpent" value="103483000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1096" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -682,7 +644,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="4" />
+      <option name="time" value="5" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -696,8 +658,9 @@
             <element signature="method#preview#0;class#test#0" expanded="false" />
             <element signature="method#cal_similarity#0;class#test#0" expanded="false" />
             <element signature="method#getSplitKeys#0;class#test#0" expanded="false" />
-            <element signature="method#save_to_hbase#0;class#test#0" expanded="false" />
             <element signature="method#print_ans#0;class#test#0" expanded="false" />
+            <element signature="class#15707:16193" expanded="false" />
+            <element signature="method#call#0;class#16209:17448" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -719,8 +682,9 @@
             <element signature="method#preview#0;class#test#0" expanded="false" />
             <element signature="method#cal_similarity#0;class#test#0" expanded="false" />
             <element signature="method#getSplitKeys#0;class#test#0" expanded="false" />
-            <element signature="method#save_to_hbase#0;class#test#0" expanded="false" />
             <element signature="method#print_ans#0;class#test#0" expanded="false" />
+            <element signature="class#15707:16193" expanded="false" />
+            <element signature="method#call#0;class#16209:17448" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -742,8 +706,9 @@
             <element signature="method#preview#0;class#test#0" expanded="false" />
             <element signature="method#cal_similarity#0;class#test#0" expanded="false" />
             <element signature="method#getSplitKeys#0;class#test#0" expanded="false" />
-            <element signature="method#save_to_hbase#0;class#test#0" expanded="false" />
             <element signature="method#print_ans#0;class#test#0" expanded="false" />
+            <element signature="class#15707:16193" expanded="false" />
+            <element signature="method#call#0;class#16209:17448" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -774,13 +739,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
           <caret line="10" column="6" lean-forward="false" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://D:/store_mvn/org/apache/spark/spark-core_2.10/1.6.0/spark-core_2.10-1.6.0.jar!/org/apache/spark/api/java/JavaRDDLike.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="200">
-          <caret line="41" column="6" lean-forward="false" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
         </state>
       </provider>
     </entry>
@@ -874,16 +832,8 @@
         <state relative-caret-position="-170">
           <caret line="38" column="18" lean-forward="true" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
-          <caret line="59" column="14" lean-forward="true" selection-start-line="59" selection-start-column="14" selection-end-line="59" selection-end-column="54" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -903,17 +853,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="jar://D:/store_mvn/org/apache/spark/spark-core_2.10/1.6.0/spark-core_2.10-1.6.0.jar!/org/apache/spark/api/java/JavaRDDLike.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="28" column="6" lean-forward="false" selection-start-line="28" selection-start-column="6" selection-end-line="28" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/util/SparkUtil.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="57" column="2" lean-forward="false" selection-start-line="57" selection-start-column="2" selection-end-line="57" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/beisen/bigdata/test/test.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1196">
-          <caret line="206" column="57" lean-forward="false" selection-start-line="206" selection-start-column="57" selection-end-line="206" selection-end-column="57" />
+        <state relative-caret-position="612">
+          <caret line="161" column="69" lean-forward="true" selection-start-line="161" selection-start-column="69" selection-end-line="161" selection-end-column="69" />
           <folding>
             <element signature="method#init#0;class#test#0" expanded="false" />
             <element signature="method#preview#0;class#test#0" expanded="false" />
             <element signature="method#cal_similarity#0;class#test#0" expanded="false" />
             <element signature="method#getSplitKeys#0;class#test#0" expanded="false" />
-            <element signature="method#save_to_hbase#0;class#test#0" expanded="false" />
             <element signature="method#print_ans#0;class#test#0" expanded="false" />
+            <element signature="class#15707:16193" expanded="false" />
+            <element signature="method#call#0;class#16209:17448" expanded="false" />
           </folding>
         </state>
       </provider>
